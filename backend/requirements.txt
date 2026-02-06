@@ -1,5 +1,9 @@
 Django==4.2.8
 djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.2
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.3.1
 python-dotenv==1.0.0
-psycopg2-binary==2.9.9
+
+# PostgreSQL (solo si usas PostgreSQL en vez de SQLite)
+# Descomenta la siguiente linea si configuras DB_ENGINE=django.db.backends.postgresql
+# psycopg2-binary==2.9.9

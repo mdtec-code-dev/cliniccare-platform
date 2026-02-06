@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node ../scripts/venv-run.js manage.py runserver 0.0.0.0:8000",
+    "migrate": "node ../scripts/venv-run.js manage.py migrate",
+    "makemigrations": "node ../scripts/venv-run.js manage.py makemigrations",
+    "lint": "echo \"TODO: configurar ruff o flake8\""
+  }
+}

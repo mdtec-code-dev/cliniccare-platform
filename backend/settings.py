@@ -50,16 +50,24 @@ TEMPLATES = [
     },
 ]
 
+# Base de datos: SQLite por defecto para desarrollo local.
+# Para usar PostgreSQL, define DB_ENGINE=django.db.backends.postgresql en tu .env
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', BASE_DIR / 'backend' / 'db.sqlite3'),
+    }
+}
+
+# Si se usa PostgreSQL, agregar las credenciales necesarias
+if 'postgresql' in DATABASES['default']['ENGINE']:
+    DATABASES['default'].update({
         'NAME': os.getenv('DB_NAME', 'cliniccare'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'password'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
-    }
-}
+    })
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
