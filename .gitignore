@@ -1,0 +1,91 @@
+# .gitignore para el repo cliniccare-platform
+# Reglas adaptadas para Django (backend) + Next.js/Node (frontend) + pnpm/turborepo
+
+# --------------------
+# Python / Django
+# --------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+*.log
+local_settings.py
+coverage/
+htmlcov/
+.pytest_cache/
+
+# Don't ignore migrations (they should be versioned)
+# **/migrations/*.py
+# ignore only migration caches
+**/migrations/__pycache__/
+
+# --------------------
+# Node / Frontend (Next.js, pnpm)
+# --------------------
+node_modules/
+frontend/node_modules/
+
+# Next.js build and output
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+
+# pnpm and turborepo caches
+.pnpm-store/
+.turbo/
+.turbo-cache/
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Do not ignore lockfiles (we keep pnpm-lock.yaml)
+# package-lock.json
+
+# --------------------
+# IDE / Editor
+# --------------------
+.vscode/
+.vs/
+.idea/
+.DS_Store
+Thumbs.db
+
+# OS temporary
+*.swp
+*~
+
+# --------------------
+# Build / artifacts
+# --------------------
+/dist/
+/build/
+*.tgz
+
+# Docker
+docker-compose.override.yml
+Dockerfile.dev
+
+# Other
+*.log
+
+# Carpeta .github (personal, no subir al repo)
+.github/
