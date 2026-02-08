@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import environ
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -30,9 +31,13 @@ INSTALLED_APPS = [
     # Third party
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
 
     # Local Apps
     "accounts",
+    "patients",
+    "appointments",
+    "medical_records",
 ]
 
 
@@ -92,6 +97,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom user
 AUTH_USER_MODEL = "accounts.User"
 
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # ==========================
 # DRF + JWT
@@ -103,8 +111,23 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ClinicCare API",
+    "DESCRIPTION": "API documentation for ClinicCare MVP",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
 
 # ==========================
 # CORS CONFIG
