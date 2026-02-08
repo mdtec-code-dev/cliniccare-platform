@@ -5,7 +5,7 @@ def set_auth_cookies(response, access_token, refresh_token, secure=False, samesi
         httponly=True,
         secure=secure,
         samesite=samesite,
-        max_age=60 * 15
+       max_age=60 * 60
     )
 
     response.set_cookie(
