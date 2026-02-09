@@ -155,6 +155,9 @@ Todos estos comandos se ejecutan desde la raiz del proyecto.
 | `pnpm lint`           | Ejecuta lint en todos los workspaces               |
 | `pnpm migrate`        | Ejecuta migraciones de Django                      |
 | `pnpm makemigrations` | Genera nuevas migraciones de Django                |
+| `pnpm seed`           | Inicializa RBAC completo + usuario admin           |
+| `pnpm seed:roles`     | Crea roles y permisos base en la BD                |
+| `pnpm superuser`      | Crea un superusuario interactivo de Django         |
 
 ---
 

@@ -11,7 +11,10 @@
     "lint": "turbo run lint",
     "stop": "node scripts/kill-ports.js",
     "migrate": "node scripts/venv-run.js manage.py migrate",
-    "makemigrations": "node scripts/venv-run.js manage.py makemigrations"
+    "makemigrations": "node scripts/venv-run.js manage.py makemigrations",
+    "seed": "node scripts/venv-run.js manage.py seed_all",
+    "seed:roles": "node scripts/venv-run.js manage.py seed_roles",
+    "superuser": "node scripts/venv-run.js manage.py createsuperuser"
   },
   "devDependencies": {
     "turbo": "^2"
