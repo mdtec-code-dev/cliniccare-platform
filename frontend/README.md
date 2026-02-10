@@ -1,36 +1,231 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏥 CLINICARE – Arquitectura Frontend
 
-## Getting Started
+Este documento describe la arquitectura frontend utilizada en **CLINICARE**, una aplicación clínica desarrollada con **Next.js (App Router)**.
 
-First, run the development server:
+El objetivo de esta arquitectura es mantener el código **ordenado, escalable y fácil de entender**, evitando complejidad innecesaria durante la etapa de MVP.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🎯 Objetivos de la arquitectura
+
+- Separación clara de responsabilidades
+- Onboarding rápido para nuevos desarrolladores
+- Trabajo paralelo dentro del equipo
+- Evitar sobreingeniería en el MVP
+- Facilitar la evolución futura del proyecto
+
+---
+
+## 🧠 Enfoque arquitectónico
+
+El frontend sigue una **arquitectura modular basada en responsabilidades**, conocida comúnmente como:
+
+> **Arquitectura Frontend Modular (preparada para features)**
+
+En lugar de organizar el código por funcionalidades desde el inicio, el proyecto se estructura por **capas de responsabilidad**, permitiendo una evolución natural hacia una arquitectura orientada a features cuando el proyecto lo requiera.
+
+---
+
+## 📁 Estructura de carpetas
+
+```txt
+app/
+components/
+services/
+hooks/
+types/
+lib/
+styles/
+public/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Responsabilidad de cada carpeta
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `app/` — Ruteo y layouts
 
-## Learn More
+Gestiona el ruteo, los layouts y los elementos propios del framework usando Next.js App Router.
 
-To learn more about Next.js, take a look at the following resources:
+**Incluye:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `layout.tsx`
+- `page.tsx`
+- `loading.tsx`
+- `error.tsx`
+- `not-found.tsx`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Regla:**
+Aquí no debe existir lógica de negocio.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### `components/` — Componentes UI reutilizables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Componentes presentacionales reutilizables que no están ligados al dominio del negocio.
+
+**Estructura:**
+
+```txt
+components/
+  ui/        # Componentes de shadcn
+  common/    # Componentes comunes personalizados
+```
+
+**Ejemplos:**
+
+- `ui/Button` (shadcn)
+- `ui/Input` (shadcn)
+- `common/Card`
+- `common/Modal`
+
+**Regla:**
+Los componentes deben ser reutilizables y no conocer la lógica de la aplicación.
+
+---
+
+### `services/` — Comunicación con la API
+
+Encapsula toda la comunicación con el backend.
+
+**Responsabilidades:**
+
+- Peticiones HTTP
+- Manejo de respuestas
+- Transformación básica de datos
+
+**Ejemplos:**
+
+- `auth.service.ts`
+- `patients.service.ts`
+- `appointments.service.ts`
+
+**Regla:**
+Los services no renderizan UI ni dependen de componentes.
+
+---
+
+### `hooks/` — Comportamiento reutilizable
+
+Custom hooks de React utilizados en distintas partes de la aplicación.
+
+**Responsabilidades:**
+
+- Lógica compartida
+- Manejo de estado
+- Efectos secundarios
+
+**Ejemplos:**
+
+- `useAuth`
+- `usePatients`
+
+**Regla:**
+Los hooks pueden usar services, pero no deben contener UI.
+
+---
+
+### `types/` — Contratos de datos
+
+Define los tipos e interfaces de TypeScript que representan la forma de los datos.
+
+**Ejemplos:**
+
+- `Patient`
+- `Appointment`
+- `User`
+
+**Regla:**
+Es la fuente única de la verdad para la estructura de datos.
+
+---
+
+### `lib/` — Utilidades y helpers
+
+Funciones genéricas y utilidades reutilizables.
+
+**Ejemplos:**
+
+- Formateo de fechas
+- Constantes
+- Funciones puras
+
+**Regla:**
+No debe contener lógica de negocio ni llamadas a la API.
+
+---
+
+### `styles/` — Estilos globales y tema
+
+Contiene los estilos globales, configuración de Tailwind y design tokens.
+
+**Incluye:**
+
+- Paleta de colores
+- Tipografía (Inter)
+- Estilos globales
+
+---
+
+### `public/` — Recursos estáticos
+
+Imágenes, íconos y archivos estáticos.
+
+---
+
+## 🔗 Flujo de dependencias (regla clave)
+
+Las dependencias deben fluir siempre en una sola dirección:
+
+```
+Componente → Hook → Service → API
+```
+
+### ❌ Nunca:
+
+```
+Service → Componente
+```
+
+Esta regla mantiene la arquitectura clara y mantenible.
+
+---
+
+## 🚀 ¿Por qué no usar `features/` aún?
+
+Durante el MVP, el proyecto no utiliza una carpeta `features/` de forma intencional para:
+
+- Reducir complejidad
+- Mantener la estructura simple
+- Evitar abstracciones prematuras
+- Facilitar la lectura del código
+
+Cuando el proyecto crezca y los dominios se vuelvan más complejos, la arquitectura podrá evolucionar sin romper el código existente.
+
+---
+
+## 🔁 Evolución futura (opcional)
+
+Si el proyecto lo requiere, se podrá migrar a una arquitectura orientada a features:
+
+```txt
+features/
+  auth/
+  patients/
+  appointments/
+```
+
+Cada feature contendrá sus propios componentes, hooks, services y types.
+
+---
+
+## 🏁 Conclusión
+
+Esta arquitectura proporciona:
+
+- Una base sólida y profesional
+- Separación clara de responsabilidades
+- Flexibilidad para crecer
+- Un enfoque pragmático ideal para un MVP
+
+Está diseñada para evolucionar solo cuando el proyecto lo necesite, no antes.
