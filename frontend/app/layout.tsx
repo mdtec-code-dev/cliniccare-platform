@@ -1,9 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
+import { Inter, Poppins, Roboto_Mono } from 'next/font/google';
+import '@/styles/globals.css';
 
-const font = Inter({
+const inter = Inter({
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-inter',
+});
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-poppins',
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-mono-base',
 });
 
 export const metadata: Metadata = {
@@ -19,7 +33,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${font.className} antialiased`}>{children}</body>
+      <body
+        className={`${inter.variable} ${poppins.variable} ${robotoMono.variable} antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
