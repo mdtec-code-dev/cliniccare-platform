@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Poppins, Roboto_Mono } from 'next/font/google';
+import { QueryProvider } from '@/lib/query-provider';
 import '@/styles/globals.css';
 
 const inter = Inter({
@@ -36,7 +37,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${poppins.variable} ${robotoMono.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
