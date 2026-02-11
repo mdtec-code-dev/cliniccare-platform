@@ -25,7 +25,11 @@ const args = process.argv.slice(2).join(' ');
 const cmd = `"${pythonPath}" ${args}`;
 
 try {
-  execSync(cmd, { stdio: 'inherit', cwd: path.join(root, 'backend') });
+  execSync(cmd, {
+    stdio: 'inherit',
+    cwd: path.join(root, 'backend'),
+    env: { ...process.env, PYTHONUNBUFFERED: '1' },
+  });
 } catch (e) {
   process.exit(e.status || 1);
 }
