@@ -68,6 +68,7 @@ Componentes presentacionales reutilizables que no están ligados al dominio del 
 
 ```txt
 components/
+  (page)     # Componentes de página (dashboard, etc.)
   ui/        # Componentes de shadcn
   common/    # Componentes comunes personalizados
 ```

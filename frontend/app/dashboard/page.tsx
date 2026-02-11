@@ -8,7 +8,7 @@ import {
   Edit,
 } from 'lucide-react';
 import { SummaryCard } from '@/components/dashboard/summary-card';
-import { Badge, type BadgeVariant } from '@/components/ui/badge';
+import { Badge, type BadgeVariant } from '@/components/common/badge';
 import Image from 'next/image';
 
 const MOCK_APPOINTMENTS = [
