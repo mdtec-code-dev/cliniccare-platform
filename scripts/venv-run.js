@@ -1,34 +1,50 @@
-const { execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const { execSync } = require("child_process");
+const path = require("path");
+const fs = require("fs");
 
-// Resolver la ruta del Python del venv desde la raiz del monorepo
-const root = path.resolve(__dirname, '..');
-const venvWin = path.join(root, '.venv', 'Scripts', 'python.exe');
-const venvUnix = path.join(root, '.venv', 'bin', 'python');
+// Resolver la ruta del monorepo
+const root = path.resolve(__dirname, "..");
+const backendDir = path.join(root, "backend");
 
-let pythonPath;
+// Posibles ubicaciones del venv
+const candidates = [
+  path.join(root, ".venv"),        // monorepo/.venv
+  path.join(backendDir, ".venv"),  // monorepo/backend/.venv
+];
 
-if (fs.existsSync(venvWin)) {
-  pythonPath = venvWin;
-} else if (fs.existsSync(venvUnix)) {
-  pythonPath = venvUnix;
-} else {
-  console.error('ERROR: No se encontro el entorno virtual (.venv).');
-  console.error('Crea el venv con: python -m venv .venv');
-  console.error('Luego instala dependencias: pip install -r backend/requirements.txt');
+let pythonPath = null;
+
+for (const venvDir of candidates) {
+  const venvWin = path.join(venvDir, "Scripts", "python.exe");
+  const venvUnix = path.join(venvDir, "bin", "python");
+
+  if (fs.existsSync(venvWin)) {
+    pythonPath = venvWin;
+    break;
+  }
+
+  if (fs.existsSync(venvUnix)) {
+    pythonPath = venvUnix;
+    break;
+  }
+}
+
+if (!pythonPath) {
+  console.error("ERROR: No se encontro el entorno virtual (.venv).");
+  console.error("Crea el venv con: python -m venv .venv");
+  console.error("Luego instala dependencias: pip install -r requirements.txt");
   process.exit(1);
 }
 
 // Los argumentos despues de "node scripts/venv-run.js" se pasan a python
-const args = process.argv.slice(2).join(' ');
+const args = process.argv.slice(2).join(" ");
 const cmd = `"${pythonPath}" ${args}`;
 
 try {
   execSync(cmd, {
-    stdio: 'inherit',
-    cwd: path.join(root, 'backend'),
-    env: { ...process.env, PYTHONUNBUFFERED: '1' },
+    stdio: "inherit",
+    cwd: backendDir,
+    env: { ...process.env, PYTHONUNBUFFERED: "1" },
   });
 } catch (e) {
   process.exit(e.status || 1);
