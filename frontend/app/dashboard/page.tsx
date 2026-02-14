@@ -1,84 +1,32 @@
+'use client';
+
 import {
   Calendar,
   FileText,
   Users,
   Wallet,
   UserPlus,
-  Eye,
-  Edit,
+  CloudOff,
+  RefreshCw,
 } from 'lucide-react';
 import { SummaryCard } from '@/components/dashboard/summary-card';
-import { Badge, type BadgeVariant } from '@/components/common/badge';
-import Image from 'next/image';
-
-const MOCK_APPOINTMENTS = [
-  {
-    id: 1,
-    time: '09:00 AM',
-    patient: 'Jasper',
-    idNum: '#CAT-1102',
-    reason: 'Annual checkout',
-    species: 'Cat',
-    breed: 'Bengal',
-    status: 'Completed',
-  },
-  {
-    id: 2,
-    time: '09:30 AM',
-    patient: 'Jasper',
-    idNum: '#CAT-1102',
-    reason: 'Dental cleaning',
-    species: 'Cat',
-    breed: 'Bengal',
-    status: 'Scheduled',
-  },
-  {
-    id: 3,
-    time: '10:00 AM',
-    patient: 'Jasper',
-    idNum: '#CAT-1102',
-    reason: 'Consultation',
-    species: 'Cat',
-    breed: 'Bengal',
-    status: 'No Show',
-  },
-  {
-    id: 4,
-    time: '10:30 AM',
-    patient: 'Jasper',
-    idNum: '#CAT-1102',
-    reason: 'General checkout',
-    species: 'Cat',
-    breed: 'Bengal',
-    status: 'Scheduled',
-  },
-  {
-    id: 5,
-    time: '11:00 AM',
-    patient: 'Jasper',
-    idNum: '#CAT-1102',
-    reason: 'Initial checkout',
-    species: 'Cat',
-    breed: 'Bengal',
-    status: 'Cancelled',
-  },
-];
-
-const STATUS_VARIANTS: Record<string, BadgeVariant> = {
-  Completed: 'blue',
-  Scheduled: 'emerald',
-  'No Show': 'amber',
-  Cancelled: 'red',
-};
+import { APPOINTMENT_STATUS_VARIANTS } from '@/types/appointment';
+import { AppointmentList } from '@/components/dashboard/appointment-list';
+import { TableSkeleton } from '@/components/common/table-skeleton';
+import { useAppointments } from '@/hooks/use-appointments';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const { appointments, stats, isLoading, error, refetch } = useAppointments();
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-xl lg:text-[32px] font-bold font-poppins text-slate-800">
-            Good Morning, Dr. Allison
+            Good Morning, {user?.username}
           </h1>
           <p className="text-slate-500 mt-1 text-sm lg:text-xl">
             Here&apos;s what&apos;s happening at your clinic today
@@ -96,186 +44,92 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Summary Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <SummaryCard
-          title="Appointment Today"
-          value="24"
-          icon={Calendar}
-          iconClassName="text-red-500 bg-red-50"
-        />
-        <SummaryCard
-          title="Pending Reports"
-          value="16"
-          icon={FileText}
-          iconClassName="text-amber-500 bg-amber-50"
-        />
-        <SummaryCard
-          title="Active Patients"
-          value="234"
-          icon={Users}
-          iconClassName="text-blue-500 bg-blue-50"
-        />
-        <SummaryCard
-          title="Monthly Revenue"
-          value="$153.60"
-          icon={Wallet}
-          iconClassName="text-emerald-500 bg-emerald-50"
-        />
-      </div>
-
-      {/* Upcoming Appointments Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg lg:text-2xl font-bold font-poppins text-slate-800">
-            Upcoming Appointments
-          </h2>
-          <button className="text-sm lg:hidden font-semibold text-blue-600 hover:text-blue-700">
-            View All
-          </button>
-        </div>
-
-        {/* Mobile List View */}
-        <div className="lg:hidden space-y-3">
-          {MOCK_APPOINTMENTS.map(apt => (
-            <div
-              key={apt.id}
-              className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-400 w-12">
-                  {apt.time.split(' ')[0]}
-                </span>
-                <div className="h-10 w-10 rounded-lg bg-slate-100 overflow-hidden">
-                  <Image
-                    src="/pets/pet-1-mobile.png"
-                    alt="Patient"
-                    width={40}
-                    height={40}
-                  />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">
-                    {apt.patient}
-                  </h4>
-                  <p className="text-xs text-slate-500">{apt.reason}</p>
-                </div>
-              </div>
-              <Badge variant={STATUS_VARIANTS[apt.status]}>{apt.status}</Badge>
-            </div>
-          ))}
-        </div>
-
-        {/* Desktop Table View */}
-        <div className="hidden lg:block overflow-hidden bg-white rounded-2xl border border-slate-100 shadow-sm">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                <th className="px-6 py-4">Patient</th>
-                <th className="px-6 py-4">Species & Breed</th>
-                <th className="px-6 py-4">Time</th>
-                <th className="px-6 py-4">Reason</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {MOCK_APPOINTMENTS.map(apt => (
-                <tr
-                  key={apt.id}
-                  className="group hover:bg-slate-50/50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-slate-100 overflow-hidden">
-                        <Image
-                          src="/pets/pet-1-desktop.png"
-                          alt="Patient"
-                          width={36}
-                          height={36}
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-800">
-                          {apt.patient}
-                        </p>
-                        <p className="font-mono text-xs text-slate-400 uppercase">
-                          {apt.idNum}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-slate-800">
-                      {apt.species}
-                    </p>
-                    <p className="text-xs text-slate-400">{apt.breed}</p>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                    {apt.time}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                    {apt.reason}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge variant={STATUS_VARIANTS[apt.status]}>
-                      {apt.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
-                        aria-label="View appointment details"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        className="p-1.5 text-slate-400 hover:text-blue-600 transition-colors"
-                        aria-label="Edit appointment"
-                      >
-                        <Edit size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-            <p className="text-xs text-slate-500 font-medium">
-              Showing 1 to 5 of 20 results
+      {error ? (
+        /* Friendly Connection Error State */
+        <div className="p-16 bg-white rounded-[32px] border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center space-y-6">
+          <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500">
+            <CloudOff size={40} />
+          </div>
+          <div className="max-w-md space-y-2">
+            <h3 className="text-2xl font-bold text-slate-800">
+              Connection Issue
+            </h3>
+            <p className="text-slate-500">
+              We&apos;re having trouble connecting to the system. This might be
+              a temporary network issue. Please try again or contact support if
+              the problem persists.
             </p>
-            <div className="flex gap-2">
-              <button
-                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-50 transition-colors disabled:opacity-50"
-                disabled
-              >
-                Previous
-              </button>
-              <button className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors">
-                Next
-              </button>
+            <div className="mt-4 p-2 bg-slate-50 rounded-lg border border-slate-100 inline-block">
+              <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block mb-1">
+                Error Reference
+              </span>
+              <code className="text-xs text-red-500 font-mono">
+                {error.message}
+              </code>
             </div>
           </div>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl font-semibold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+          >
+            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+            Try to Reconnect
+          </button>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Summary Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <SummaryCard
+              title="Appointment Today"
+              value={stats.appointmentsToday}
+              icon={Calendar}
+              iconClassName="text-red-500 bg-red-50"
+              isLoading={isLoading}
+            />
+            <SummaryCard
+              title="Pending Reports"
+              value={stats.pendingReports}
+              icon={FileText}
+              iconClassName="text-amber-500 bg-amber-50"
+              isLoading={isLoading}
+            />
+            <SummaryCard
+              title="Active Patients"
+              value={stats.activePatients}
+              icon={Users}
+              iconClassName="text-blue-500 bg-blue-50"
+              isLoading={isLoading}
+            />
+            <SummaryCard
+              title="Monthly Revenue"
+              value={`$${stats.monthlyRevenue.toFixed(2)}`}
+              icon={Wallet}
+              iconClassName="text-emerald-500 bg-emerald-50"
+              isLoading={isLoading}
+            />
+          </div>
 
-      {/* Footer - Desktop Only Information */}
-      <footer className="hidden lg:flex pt-8 pb-4 items-center justify-between text-[11px] text-slate-400 font-medium border-t border-slate-100">
-        <p>@2026 CLINICARE Medical SaaS. All rights reserved.</p>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-slate-600">
-            Privacy Policy
-          </a>
-          <a href="#" className="hover:text-slate-600">
-            Terms of Service
-          </a>
-          <a href="#" className="hover:text-slate-600">
-            Help Center
-          </a>
-        </div>
-      </footer>
+          {/* Appointments Table Section */}
+          {isLoading ? (
+            <TableSkeleton />
+          ) : appointments.length === 0 ? (
+            <div className="p-12 bg-white rounded-3xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+              <h3 className="text-lg font-bold text-slate-800">
+                There&apos;s nothing here yet
+              </h3>
+              <p className="text-slate-500 text-sm mt-2">
+                Create patients and appointments to see them here.
+              </p>
+            </div>
+          ) : (
+            <AppointmentList
+              appointments={appointments}
+              statusVariants={APPOINTMENT_STATUS_VARIANTS}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
