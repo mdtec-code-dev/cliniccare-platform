@@ -1,0 +1,22 @@
+{
+  "name": "cliniccare-platform",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "node scripts/kill-ports.js && turbo run dev",
+    "dev:frontend": "node scripts/kill-ports.js && turbo run dev --filter=frontend",
+    "dev:backend": "node scripts/kill-ports.js && turbo run dev --filter=backend",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "stop": "node scripts/kill-ports.js",
+    "migrate": "node scripts/venv-run.js manage.py migrate",
+    "makemigrations": "node scripts/venv-run.js manage.py makemigrations",
+    "seed": "node scripts/venv-run.js manage.py seed_all",
+    "seed:roles": "node scripts/venv-run.js manage.py seed_roles",
+    "superuser": "node scripts/venv-run.js manage.py createsuperuser"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  }
+}
