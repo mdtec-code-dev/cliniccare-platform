@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useLogin } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'El usuario es requerido'),
@@ -17,7 +17,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
  * Consume POST /api/auth/login/ via useLogin hook.
  */
 export function LoginForm() {
-  const { login, isLoading, error } = useLogin();
+  const { login, isLoginLoading, loginError } = useAuth();
 
   const {
     register,
@@ -36,9 +36,9 @@ export function LoginForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
     >
-      {error && (
+      {loginError && (
         <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
-          {error}
+          {loginError}
         </div>
       )}
 
@@ -84,10 +84,10 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={isLoading}
-        className="w-full rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={isLoginLoading}
+        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
       >
-        {isLoading ? 'Iniciando sesion...' : 'Iniciar sesion'}
+        {isLoginLoading ? 'Iniciando sesion...' : 'Iniciar sesion'}
       </button>
     </form>
   );

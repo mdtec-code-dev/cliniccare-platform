@@ -1,11 +1,13 @@
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SummaryCardProps {
   title: string;
   value: string | number;
   icon: LucideIcon;
   iconClassName?: string;
+  isLoading?: boolean;
 }
 
 export function SummaryCard({
@@ -13,7 +15,18 @@ export function SummaryCard({
   value,
   icon: Icon,
   iconClassName,
+  isLoading,
 }: SummaryCardProps) {
+  if (isLoading) {
+    return (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2">
+        <Skeleton className="w-12 h-12 rounded-xl" />
+        <Skeleton className="w-24 h-4" />
+        <Skeleton className="w-16 h-8" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center gap-2 transition-all hover:shadow-md">
       <div className={cn('p-3 rounded-xl bg-slate-50', iconClassName)}>

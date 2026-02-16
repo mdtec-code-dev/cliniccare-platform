@@ -6,7 +6,9 @@ export interface LoginCredentials {
 
 /** Respuesta exitosa de POST /api/auth/login/ */
 export interface LoginResponse {
-  message: string;
+  access?: string;
+  refresh?: string;
+  message?: string;
 }
 
 /** Respuesta de GET /api/auth/me/ */
@@ -15,6 +17,9 @@ export interface AuthUser {
   username: string;
   email: string;
 }
+
+/** Roles de usuario disponibles */
+export type UserRole = 'admin' | 'doctor' | 'receptionist';
 
 /** Estructura de error de la API (DRF) */
 export interface ApiError {
