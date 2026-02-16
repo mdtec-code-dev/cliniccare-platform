@@ -26,7 +26,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-xl lg:text-[32px] font-bold font-poppins text-slate-800">
-            Good Morning, {user?.username}
+            Good Morning, {user?.username} - {user?.role}
           </h1>
           <p className="text-slate-500 mt-1 text-sm lg:text-xl">
             Here&apos;s what&apos;s happening at your clinic today

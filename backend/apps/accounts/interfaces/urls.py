@@ -1,13 +1,15 @@
 from django.urls import path
 from apps.accounts.interfaces.views import (
     AssignRoleView,
+    GetUserView,
     ListRolesView,
     MyRolesView,
     RegisterView,
     LoginView,
     RefreshView,
     LogoutView,
-    MeView
+    MeView,
+    UserListView
 )
 
 urlpatterns = [
@@ -19,4 +21,6 @@ urlpatterns = [
     path("assign-role/", AssignRoleView.as_view()),
     path("me/roles/", MyRolesView.as_view()),
     path("roles/", ListRolesView.as_view()),
+    path("users/", UserListView.as_view()),
+    path("users/<int:user_id>/", GetUserView.as_view()),
 ]
