@@ -5,6 +5,8 @@ import environ
 from datetime import timedelta
 import dj_database_url
 
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Para que Django reconozca apps dentro de /apps
@@ -127,7 +129,7 @@ AUTHENTICATION_BACKENDS = [
 # ==========================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "apps.accounts.interfaces.authentication.CookieJWTAuthentication",
+       "apps.accounts.interfaces.authentication.CookieJWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
@@ -181,3 +183,6 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # En producción esto debe ser True (HTTPS)
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+
+

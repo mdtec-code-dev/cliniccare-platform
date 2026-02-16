@@ -1,42 +1,33 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-/**
- * Middleware para proteger rutas del sistema clínico.
- * Al usar cookies HttpOnly, el middleware tiene acceso a ellas directamente.
- */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Extraemos el access_token de las cookies
-  const accessToken = request.cookies.get('access_token')?.value;
+  const accessToken = request.cookies.get("access_token")?.value;
+  const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  // Rutas que requieren autenticación
-  const isDashboardRoute = pathname.startsWith('/dashboard');
+  const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isAuthRoute = pathname.startsWith("/login");
 
-  // Rutas de autenticación (para redirigir si ya está logueado)
-  const isAuthRoute = pathname.startsWith('/login');
+  // callback completo
+  const callbackUrl = request.nextUrl.pathname + request.nextUrl.search;
 
-  // CASO 1: Intenta entrar al dashboard sin token
-  if (isDashboardRoute && !accessToken) {
-    const loginUrl = new URL('/login', request.url);
-    // Guardamos la intención original para volver después del login
-    loginUrl.searchParams.set('callbackUrl', pathname);
+  // CASO 1: Intenta entrar al dashboard sin tokens
+  if (isDashboardRoute && !accessToken && !refreshToken) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", callbackUrl);
     return NextResponse.redirect(loginUrl);
   }
 
   // CASO 2: Ya está logueado e intenta ir al login
-  if (isAuthRoute && accessToken) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  if (isAuthRoute && (accessToken || refreshToken)) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
 }
 
-/**
- * Configuración del matcher para que el middleware solo corra en rutas específicas.
- * Optimizamos el performance evitando que corra en assets estáticos o imágenes.
- */
 export const config = {
-  matcher: ['/dashboard/:path*', '/login'],
+  matcher: ["/dashboard/:path*", "/login"],
 };

@@ -8,7 +8,7 @@ El módulo **accounts** es responsable de:
 - Autenticación (login, logout, refresh)
 - Gestión de sesión mediante **JWT en cookies httpOnly**
 - Control de acceso basado en roles y permisos (RBAC)
-- Exposición de endpoints para que frontend consuma roles y datos del usuario autenticado
+- Exposición de endpoints para que frontend consuma roles, permisos y usuarios del sistema
 
 Este módulo sigue una **arquitectura por capas** (inspirada en Clean Architecture):
 
@@ -78,6 +78,8 @@ DOCTOR
 RECEPTIONIST
 ```
 
+---
+
 ### PermissionCodes
 
 Los permisos siguen una estructura estándar CRUD por dominio:
@@ -86,18 +88,24 @@ Los permisos siguen una estructura estándar CRUD por dominio:
 - `create.patients`
 - `update.patients`
 - `delete.patients`
+
 - `read.appointments`
 - `create.appointments`
 - `update.appointments`
 - `delete.appointments`
+
 - `read.medical_records`
 - `create.medical_records`
 - `update.medical_records`
 - `delete.medical_records`
+
 - `read.users`
 - `create.users`
 - `update.users`
 - `delete.users`
+
+- `read.roles`
+- `update.roles`
 
 Estos valores son la **fuente de verdad** del sistema RBAC.
 
@@ -156,9 +164,9 @@ Responsable de asignar roles:
 
 ## 🌐 Endpoints (API)
 
-### 🔓 Auth
+## 🔓 Auth
 
-#### `POST /accounts/register/`
+### `POST /accounts/register/`
 
 Crea un usuario.
 
@@ -179,7 +187,7 @@ Crea un usuario.
 
 ---
 
-#### `POST /accounts/login/`
+### `POST /accounts/login/`
 
 Autentica usuario y setea cookies JWT.
 
@@ -199,19 +207,18 @@ Autentica usuario y setea cookies JWT.
 
 ---
 
-#### `POST /accounts/refresh/`
+### `POST /accounts/refresh/`
 
 Renueva access token usando cookie `refresh_token`.
 
 **Response**
 
 - `200 OK` token actualizado
-- `400 Bad Request` si falta cookie refresh
-- `401 Unauthorized` refresh inválido/expirado
+- `401 Unauthorized` refresh inválido/expirado o cookie ausente
 
 ---
 
-#### `POST /accounts/logout/`
+### `POST /accounts/logout/`
 
 Elimina cookies de sesión.
 
@@ -221,11 +228,11 @@ Elimina cookies de sesión.
 
 ---
 
-## 👤 Usuario
+## 👤 Usuario autenticado
 
-#### `GET /accounts/me/`
+### `GET /accounts/me/`
 
-Devuelve información del usuario autenticado.
+Devuelve información del usuario autenticado, sus roles y permisos efectivos (RBAC custom).
 
 **Response**
 
@@ -233,13 +240,15 @@ Devuelve información del usuario autenticado.
 {
   "id": 1,
   "username": "juan",
-  "email": "juan@mail.com"
+  "email": "juan@mail.com",
+  "roles": ["ADMIN"],
+  "permissions": ["read.users", "update.roles", "read.patients"]
 }
 ```
 
 ---
 
-#### `GET /accounts/me/roles/`
+### `GET /accounts/me/roles/`
 
 Lista los roles asignados al usuario autenticado.
 
@@ -257,7 +266,7 @@ Lista los roles asignados al usuario autenticado.
 
 ## 🛡️ Roles y permisos
 
-#### `GET /accounts/roles/`
+### `GET /accounts/roles/`
 
 Lista todos los roles disponibles (para dropdowns del frontend).
 
@@ -275,9 +284,11 @@ Lista todos los roles disponibles (para dropdowns del frontend).
 
 ---
 
-#### `POST /accounts/assign-role/` (Admin)
+### `POST /accounts/assign-role/`
 
 Asigna un rol a un usuario.
+
+🔒 **Requiere permiso:** `update.roles`
 
 **Body**
 
@@ -301,14 +312,79 @@ Asigna un rol a un usuario.
 
 ---
 
+## 👥 Administración de Usuarios (Admin Section)
+
+### `GET /accounts/users/`
+
+Lista todos los usuarios del sistema.
+
+🔒 **Requiere permiso:** `read.users`
+
+**Response**
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@mail.com",
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "username": "maria",
+      "email": "maria@mail.com",
+      "is_active": true
+    }
+  ]
+}
+```
+
+---
+
+### `GET /accounts/users/<id>/`
+
+Devuelve un usuario específico.
+
+🔒 **Requiere permiso:** `read.users`
+
+**Response**
+
+```json
+{
+  "id": 2,
+  "username": "maria",
+  "email": "maria@mail.com",
+  "is_active": true
+}
+```
+
+**Responses**
+
+- `200 OK`
+- `404 Not Found` si el usuario no existe
+
+---
+
 ## 🔐 Seguridad y Autorización
 
 - Cookies `httpOnly` (mitiga robo de token vía XSS)
-- Roles asignados vía DB
-- Permisos reutilizables
-- Protección actual basada en rol (`IsAdminRole`)
+- JWT access/refresh con refresh endpoint
+- Roles asignados vía DB (`UserRole`)
+- Permisos asignados vía DB (`RolePermission`)
+- Autorización implementada mediante permission class genérica `HasPermission`
 
-> Recomendación: evolucionar a validación por permisos (`PermissionCodes.UPDATE_USERS`) para mayor escalabilidad.
+### Permission Class (`HasPermission`)
+
+Cada endpoint protegido define:
+
+```python
+permission_classes = [IsAuthenticated, HasPermission]
+required_permission = "read.users"
+```
+
+Esto evita crear clases específicas por cada permiso.
 
 ---
 
@@ -326,3 +402,4 @@ Este comando:
 
 - Crea roles
 - Crea permisos
+- Asigna permisos iniciales a roles
