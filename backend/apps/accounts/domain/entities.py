@@ -1,10 +1,13 @@
-class Roles:
+from enum import Enum
+
+
+class Roles(str, Enum):
     ADMIN = "ADMIN"
     DOCTOR = "DOCTOR"
     RECEPTIONIST = "RECEPTIONIST"
 
 
-class PermissionCodes:
+class PermissionCodes(str, Enum):
     # Patients
     READ_PATIENTS = "read.patients"
     CREATE_PATIENTS = "create.patients"
@@ -23,7 +26,7 @@ class PermissionCodes:
     UPDATE_MEDICAL_RECORDS = "update.medical_records"
     DELETE_MEDICAL_RECORDS = "delete.medical_records"
 
-    # Admin management
+    # Users / Admin
     READ_USERS = "read.users"
     CREATE_USERS = "create.users"
     UPDATE_USERS = "update.users"
