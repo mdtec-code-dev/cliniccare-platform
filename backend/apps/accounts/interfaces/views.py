@@ -2,14 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-
+from apps.common.cookies import set_auth_cookies
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.db import IntegrityError
+from rest_framework.permissions import IsAuthenticated
+from apps.accounts.infrastructure.models import UserRole
+from apps.accounts.infrastructure.models import Role
 
-from apps.accounts.interfaces.serializers import RegisterSerializer, LoginSerializer
-from apps.accounts.application.use_cases import LoginUseCase, RegisterUseCase
+from apps.accounts.interfaces.serializers import RegisterSerializer, LoginSerializer,AssignRoleSerializer
+from apps.accounts.application.use_cases import LoginUseCase, RegisterUseCase,AssignRoleUseCase
 from apps.accounts.infrastructure.repositories_impl import DjangoAuthRepository
+from apps.accounts.interfaces.permissions import IsAdminRole
 from apps.common.cookies import set_auth_cookies, clear_auth_cookies
 
 
@@ -95,13 +99,10 @@ class RefreshView(APIView):
 
         response = Response({"message": "Token actualizado"}, status=status.HTTP_200_OK)    
 
-        response.set_cookie(
-            key="access_token",
-            value=new_access,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-            max_age=60 * 15
+        set_auth_cookies(
+                 response,
+                 access_token=new_access,
+                refresh_token=refresh_token
         )
 
         return response
@@ -123,4 +124,53 @@ class MeView(APIView):
             "id": user.id,
             "username": user.username,
             "email": user.email
+        })
+    
+
+class AssignRoleView(APIView):
+    permission_classes = [IsAdminRole]
+
+    def post(self, request):
+        serializer = AssignRoleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        use_case = AssignRoleUseCase()
+        result, error = use_case.execute(
+            user_id=data["user_id"],
+            role_name=data["role"]
+        )
+
+        if error == "USER_NOT_FOUND":
+            return Response({"detail": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        if error == "ROLE_NOT_FOUND":
+            return Response({"detail": "Rol no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(result, status=status.HTTP_200_OK)
+    
+
+
+class MyRolesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        roles = UserRole.objects.filter(user=request.user).values_list("role__name", flat=True)
+
+        return Response({
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "roles": list(roles)
+        })
+    
+
+class ListRolesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        roles = Role.objects.all().values("id", "name")
+
+        return Response({
+            "roles": list(roles)
         })
