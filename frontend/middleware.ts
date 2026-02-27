@@ -7,20 +7,22 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isProtectedRoute =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/patients") ||
+    pathname.startsWith("/appointments") ||
+    pathname.startsWith("/users");
+
   const isAuthRoute = pathname.startsWith("/login");
 
-  // callback completo
   const callbackUrl = request.nextUrl.pathname + request.nextUrl.search;
 
-  // CASO 1: Intenta entrar al dashboard sin tokens
-  if (isDashboardRoute && !accessToken && !refreshToken) {
+  if (isProtectedRoute && !accessToken && !refreshToken) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", callbackUrl);
     return NextResponse.redirect(loginUrl);
   }
 
-  // CASO 2: Ya está logueado e intenta ir al login
   if (isAuthRoute && (accessToken || refreshToken)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -29,5 +31,11 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: [
+    "/login",
+    "/dashboard/:path*",
+    "/patients/:path*",
+    "/appointments/:path*",
+    "/users/:path*",
+  ],
 };

@@ -5,7 +5,7 @@ from rest_framework import status
 
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
-
+from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
@@ -16,6 +16,8 @@ from apps.accounts.interfaces.serializers import (
     RegisterSerializer,
     LoginSerializer,
     AssignRoleSerializer,
+    ChangePasswordSerializer,
+    UpdateUserStatusSerializer
 )
 from apps.accounts.application.use_cases import (
     LoginUseCase,
@@ -182,6 +184,31 @@ class MyRolesView(APIView):
         )
 
 
+class ChangeMyPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        current_password = serializer.validated_data["current_password"]
+        new_password = serializer.validated_data["new_password"]
+
+        if not user.check_password(current_password):
+            return Response(
+                {"detail": "La contraseña actual es incorrecta"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+
+        return Response(
+            {"message": "Contraseña actualizada correctamente"},
+            status=status.HTTP_200_OK
+        )
+
 class ListRolesView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -202,7 +229,23 @@ class UserListView(APIView):
     def get(self, request):
         users = User.objects.all().values("id", "username", "email", "is_active")
 
-        return Response({"users": list(users)}, status=status.HTTP_200_OK)
+        user_roles = (
+            UserRole.objects.select_related("role")
+            .all()
+            .values("user_id", "role__name")
+        )
+
+        role_map = {str(ur["user_id"]): ur["role__name"] for ur in user_roles}
+
+        result = []
+        for user in users:
+            user_id = str(user["id"])
+            result.append({
+                **user,
+                "role": role_map.get(user_id),
+            })
+
+        return Response({"users": result}, status=status.HTTP_200_OK)
 
 
 class GetUserView(APIView):
@@ -253,3 +296,32 @@ class AssignRoleView(APIView):
             )
 
         return Response(result, status=status.HTTP_200_OK)
+    
+
+class UpdateUserStatusView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "update.users"
+
+    def patch(self, request, user_id):
+        serializer = UpdateUserStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = get_object_or_404(User, id=user_id)
+
+        if user.id == request.user.id:
+            return Response(
+                {"detail": "No puedes desactivar tu propio usuario"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.is_active = serializer.validated_data["is_active"]
+        user.save(update_fields=["is_active"])
+
+        return Response(
+            {
+                "message": "Estado actualizado correctamente",
+                "user_id": str(user.id),
+                "is_active": user.is_active,
+            },
+            status=status.HTTP_200_OK
+        )

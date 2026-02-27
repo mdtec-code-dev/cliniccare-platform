@@ -9,7 +9,9 @@ from apps.accounts.interfaces.views import (
     RefreshView,
     LogoutView,
     MeView,
-    UserListView
+    UserListView,
+    ChangeMyPasswordView,
+    UpdateUserStatusView
 )
 
 urlpatterns = [
@@ -23,4 +25,6 @@ urlpatterns = [
     path("roles/", ListRolesView.as_view()),
     path("users/", UserListView.as_view()),
     path("users/<int:user_id>/", GetUserView.as_view()),
+    path("change-password/", ChangeMyPasswordView.as_view(), name="change-password"),
+    path("users/<int:user_id>/status/", UpdateUserStatusView.as_view(), name="user-status"),
 ]

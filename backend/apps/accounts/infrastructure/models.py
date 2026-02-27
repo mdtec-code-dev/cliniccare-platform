@@ -25,11 +25,17 @@ class Permission(models.Model):
 
 
 class UserRole(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_roles")
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name="role_users")
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="user_role"
+    )
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("user", "role")
+        constraints = [
+            models.UniqueConstraint(fields=["user"], name="unique_user_role")
+        ]
 
 
 class RolePermission(models.Model):

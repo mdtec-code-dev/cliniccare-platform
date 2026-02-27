@@ -14,6 +14,16 @@ class PermissionCodes(str, Enum):
     UPDATE_PATIENTS = "update.patients"
     DELETE_PATIENTS = "delete.patients"
 
+    READ_OWNERS = "read.owners"
+    CREATE_OWNERS = "create.owners"
+    UPDATE_OWNERS = "update.owners"
+    DELETE_OWNERS = "delete.owners"
+
+    READ_SPECIES = "read.species"
+    CREATE_SPECIES = "create.species"
+    UPDATE_SPECIES = "update.species"
+    DELETE_SPECIES = "delete.species"
+
     # Appointments
     READ_APPOINTMENTS = "read.appointments"
     CREATE_APPOINTMENTS = "create.appointments"
@@ -30,4 +40,5 @@ class PermissionCodes(str, Enum):
     READ_USERS = "read.users"
     CREATE_USERS = "create.users"
     UPDATE_USERS = "update.users"
+    UPDATE_ROLES = "update.roles"
     DELETE_USERS = "delete.users"
