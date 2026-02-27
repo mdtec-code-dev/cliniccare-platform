@@ -19,16 +19,18 @@ from apps.appointments.interfaces.serializers import (
 from apps.appointments.interfaces.permissions import AppointmentsPermission
 
 
-
 class AppointmentListCreateView(APIView):
     permission_classes = [AppointmentsPermission]
 
-
     def get(self, request):
-        appointments = Appointment.objects.all().order_by("-start_time")
+        appointments = (
+            Appointment.objects.select_related("patient", "owner", "doctor", "created_by", "patient__species")
+            .filter(is_active=True)
+            .order_by("-date", "-time")
+        )
+
         serializer = AppointmentSerializer(appointments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
 
     def post(self, request):
         serializer = AppointmentCreateSerializer(data=request.data)
@@ -43,33 +45,35 @@ class AppointmentListCreateView(APIView):
                 patient_id=data["patient_id"],
                 doctor_id=data.get("doctor_id"),
                 created_by_id=request.user.id,
-                start_time=data["start_time"],
-                end_time=data["end_time"],
-                reason=data.get("reason"),
+                appointment_date=data["date"],
+                appointment_time=data["time"],
+                appointment_type=data["type"],
                 notes=data.get("notes"),
+                reminder=data.get("reminder", True),
             )
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
 
         return Response(
             AppointmentSerializer(appointment).data,
             status=status.HTTP_201_CREATED
         )
-    
+
 
 class AppointmentDetailView(APIView):
     permission_classes = [AppointmentsPermission]
 
-
     def get(self, request, pk):
-        appointment = get_object_or_404(Appointment, pk=pk)
+        appointment = get_object_or_404(
+            Appointment.objects.select_related("patient", "owner", "doctor", "created_by", "patient__species"),
+            pk=pk,
+            is_active=True
+        )
         return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)
 
 
 class AssignDoctorView(APIView):
     permission_classes = [AppointmentsPermission]
-
 
     def patch(self, request, pk):
         serializer = AssignDoctorSerializer(data=request.data)
@@ -82,12 +86,14 @@ class AssignDoctorView(APIView):
 
         try:
             appointment = use_case.execute(appointment_id=pk, doctor_id=doctor_id)
-
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)    
-    
+        return Response(
+            AppointmentSerializer(appointment).data,
+            status=status.HTTP_200_OK
+        )
+
 
 class ChangeAppointmentStatusView(APIView):
     permission_classes = [AppointmentsPermission]
@@ -106,4 +112,7 @@ class ChangeAppointmentStatusView(APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)
+        return Response(
+            AppointmentSerializer(appointment).data,
+            status=status.HTTP_200_OK
+        )

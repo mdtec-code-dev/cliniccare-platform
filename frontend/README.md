@@ -69,6 +69,7 @@ Componentes presentacionales reutilizables que no están ligados al dominio del 
 ```txt
 components/
   (page)     # Componentes de página (dashboard, etc.)
+  layouts/   # Layouts (header, footer, etc.)
   ui/        # Componentes de shadcn
   common/    # Componentes comunes personalizados
 ```
@@ -82,6 +83,26 @@ components/
 
 **Regla:**
 Los componentes deben ser reutilizables y no conocer la lógica de la aplicación.
+
+---
+
+### `constants/` — Constantes y Configuración Estática
+
+Valores inmutables y configuraciones globales que definen el comportamiento o contenido estático de la aplicación.
+**Responsabilidades:**
+
+- Centralizar valores que se repiten (evitar _magic strings_ o números mágicos).
+- Definir estructuras de datos estáticas (menús, opciones de selectores, límites de paginación).
+- Almacenar configuraciones que no cambian durante el tiempo de ejecución.
+
+**Ejemplos:**
+
+- `NAV_ITEMS`
+- `API_ENDPOINTS`
+- `ROLES_PERMISSIONS`
+
+**Regla:**
+Las constantes deben ser inmutables. Pueden contener referencias a componentes (como iconos) para mapeo de datos, pero no deben contener lógica de estado (`useState`) ni renderizar JSX complejo.
 
 ---
 

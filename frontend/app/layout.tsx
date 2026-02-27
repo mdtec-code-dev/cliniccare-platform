@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, Poppins, Roboto_Mono } from 'next/font/google';
-import { QueryProvider } from '@/lib/query-provider';
+import { QueryProvider } from '@/lib/query/query-provider';
 import '@/styles/globals.css';
+import { ToastProvider } from '@/provider/toast-provider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -38,6 +39,7 @@ export default function RootLayout({
         className={`${inter.variable} ${poppins.variable} ${robotoMono.variable} antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
+        <ToastProvider />
       </body>
     </html>
   );
