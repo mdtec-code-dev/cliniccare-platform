@@ -37,7 +37,7 @@ class RegisterUseCase:
 
 class AssignRoleUseCase:
 
-    def execute(self, user_id: int, role_name: str):
+    def execute(self, user_id, role_name):
         user = User.objects.filter(id=user_id).first()
         if not user:
             return None, "USER_NOT_FOUND"
@@ -46,11 +46,16 @@ class AssignRoleUseCase:
         if not role:
             return None, "ROLE_NOT_FOUND"
 
-        user_role, created = UserRole.objects.get_or_create(user=user, role=role)
+        user_role = UserRole.objects.filter(user=user).first()
+
+        if user_role:
+            user_role.role = role
+            user_role.save(update_fields=["role"])
+        else:
+            UserRole.objects.create(user=user, role=role)
 
         return {
-            "user_id": user.id,
-            "username": user.username,
+            "message": "Rol actualizado correctamente",
+            "user_id": str(user.id),
             "role": role.name,
-            "assigned": created
         }, None

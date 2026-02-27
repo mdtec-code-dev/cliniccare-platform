@@ -1,47 +1,33 @@
-'use client';
-
 import Link from 'next/link';
-import { Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TriangleAlert, ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center space-y-8 animate-in fade-in duration-700">
-        <div className="space-y-4">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] select-none">
-            Clinic Entrance
-          </p>
-          {/* Large 404 Text */}
-          <div className="relative">
-            <h1 className="text-[120px] font-black text-slate-200 leading-none select-none">
-              404
-            </h1>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-white px-4 py-1 text-blue-600 font-bold rounded-lg shadow-sm border border-blue-50">
-                Page Not Found
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-orange-50 via-background to-amber-50">
+      <div className="w-full max-w-md rounded-2xl border bg-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10 p-8 text-center space-y-6">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
+          <TriangleAlert className="h-7 w-7" />
         </div>
 
-        <div className="space-y-3">
-          <h2 className="text-2xl font-bold text-slate-800">
-            Oops! Lost in the Clinic?
-          </h2>
-          <p className="text-slate-500">
-            You are <strong>outside the clinical system</strong>. The page you
-            are looking for doesn&apos;t exist or is currently unavailable.
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">404</h1>
+          <p className="text-muted-foreground text-sm">
+            La página que buscas no existe o no está disponible.
           </p>
         </div>
 
-        <div className="flex justify-center pt-4">
-          <Link
-            href="/login"
-            className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold transition-all shadow-lg active:scale-95 w-full sm:w-auto"
-          >
-            <Home size={18} />
-            Return to Entrance
-          </Link>
+        <div className="flex flex-col gap-2">
+          <Button asChild className="w-full">
+            <Link href="/dashboard">Volver al Dashboard</Link>
+          </Button>
+
+          <Button asChild variant="ghost" className="w-full">
+            <Link href="/" className="flex items-center justify-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Ir al inicio
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

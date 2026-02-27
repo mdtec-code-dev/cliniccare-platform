@@ -1,8 +1,15 @@
-from datetime import datetime
+from datetime import date, time
 from typing import Optional
+from uuid import UUID
 
-from apps.appointments.domain.entities import AppointmentStatus, AppointmentRules
+from apps.appointments.domain.entities import (
+    AppointmentStatus,
+    AppointmentRules,
+    AppointmentType,
+)
 from apps.appointments.domain.repositories import AppointmentRepository
+
+from apps.patients.infrastructure.models import Patient
 
 
 class CreateAppointmentUseCase:
@@ -12,36 +19,47 @@ class CreateAppointmentUseCase:
 
     def execute(
         self,
-        patient_id: int,
-        created_by_id: int,
-        start_time: datetime,
-        end_time: datetime,
-        doctor_id: Optional[int] = None,
-        reason: Optional[str] = None,
+        patient_id: UUID,
+        created_by_id: UUID,
+        appointment_date: date,
+        appointment_time: time,
+        appointment_type: str,
+        doctor_id: Optional[UUID] = None,
         notes: Optional[str] = None,
+        reminder: bool = True,
     ):
-        AppointmentRules.validate_time_range(start_time, end_time)
+        AppointmentRules.validate_datetime(appointment_date, appointment_time)
+        AppointmentRules.validate_type(appointment_type)
 
-        # Si doctor está asignado, validamos solapamiento
+        # Validar que el paciente exista y esté activo
+        patient = Patient.objects.filter(id=patient_id, is_active=True).select_related("owner").first()
+        if not patient:
+            raise ValueError("El paciente no existe o está inactivo")
+
+        owner_id = patient.owner_id
+
+        # Si doctor está asignado, validamos conflicto por slot
         if doctor_id:
-            overlap = self.repository.exists_overlap(
+            conflict = self.repository.exists_conflict(
                 doctor_id=doctor_id,
-                start_time=start_time,
-                end_time=end_time,
+                appointment_date=appointment_date,
+                appointment_time=appointment_time,
             )
 
-            if overlap:
-                raise ValueError("El doctor ya tiene un turno asignado en ese rango de tiempo")
+            if conflict:
+                raise ValueError("El doctor ya tiene una cita asignada en esa fecha y hora")
 
         appointment = self.repository.create(
             patient_id=patient_id,
+            owner_id=owner_id,
             doctor_id=doctor_id,
             created_by_id=created_by_id,
-            start_time=start_time,
-            end_time=end_time,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            appointment_type=appointment_type,
             status=AppointmentStatus.SCHEDULED,
-            reason=reason,
             notes=notes,
+            reminder=reminder,
         )
 
         return appointment
@@ -52,23 +70,23 @@ class AssignDoctorUseCase:
     def __init__(self, repository: AppointmentRepository):
         self.repository = repository
 
-    def execute(self, appointment_id: int, doctor_id: int):
+    def execute(self, appointment_id: UUID, doctor_id: UUID):
         appointment = self.repository.get_by_id(appointment_id)
 
-        if not appointment:
-            raise ValueError("Appointment no encontrado")
+        if not appointment or not appointment.is_active:
+            raise ValueError("Appointment no encontrado o está inactivo")
 
-        AppointmentRules.validate_time_range(appointment.start_time, appointment.end_time)
+        AppointmentRules.validate_datetime(appointment.date, appointment.time)
 
-        overlap = self.repository.exists_overlap(
+        conflict = self.repository.exists_conflict(
             doctor_id=doctor_id,
-            start_time=appointment.start_time,
-            end_time=appointment.end_time,
+            appointment_date=appointment.date,
+            appointment_time=appointment.time,
             exclude_appointment_id=appointment.id,
         )
 
-        if overlap:
-            raise ValueError("El doctor ya tiene un turno asignado en ese rango de tiempo")
+        if conflict:
+            raise ValueError("El doctor ya tiene una cita asignada en esa fecha y hora")
 
         appointment = self.repository.assign_doctor(appointment, doctor_id)
 
@@ -80,14 +98,13 @@ class ChangeAppointmentStatusUseCase:
     def __init__(self, repository: AppointmentRepository):
         self.repository = repository
 
-    def execute(self, appointment_id: int, new_status: str):
+    def execute(self, appointment_id: UUID, new_status: str):
         appointment = self.repository.get_by_id(appointment_id)
 
-        if not appointment:
-            raise ValueError("Appointment no encontrado")
+        if not appointment or not appointment.is_active:
+            raise ValueError("Appointment no encontrado o está inactivo")
 
-        if new_status not in AppointmentStatus.CHOICES:
-            raise ValueError("Estado inválido")
+        AppointmentRules.validate_status(new_status)
 
         if not AppointmentRules.can_change_status(appointment.status, new_status):
             raise ValueError(f"No se puede cambiar estado de {appointment.status} a {new_status}")
